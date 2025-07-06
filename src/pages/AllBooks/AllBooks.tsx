@@ -1,5 +1,6 @@
+import { BorrowBookModal } from "@/components/modal/BorrowBookModal";
 import { EditBookModal } from "@/components/modal/EditBookModal";
-import { Button } from "@/components/ui/button";
+
 import type { IBooks } from "@/types/types";
 import { useState } from "react";
 
@@ -24,11 +25,11 @@ const dummyBooks: IBooks[] = [
   },
 ];
 
-const BooksPage = () => {
+const AllBooks = () => {
   const [selectedBook, setSelectedBook] = useState<IBooks | null>(null);
   const [modalType, setModalType] = useState<"view" | "edit" | "borrow" | null>(null);
 
-  const openModal = (book: IBooks, type: typeof modalType) => {
+  const openModal = (book: IBooks, type: "view" | "edit" | "borrow") => {
     setSelectedBook(book);
     setModalType(type);
   };
@@ -108,7 +109,7 @@ const BooksPage = () => {
         </table>
       </div>
 
-      {/* View Book Modal */}
+      {/* View Modal */}
       {modalType === "view" && selectedBook && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow max-w-md w-full relative">
@@ -137,47 +138,22 @@ const BooksPage = () => {
         </div>
       )}
 
-      {/* Edit Book Modal */}
+      {/* Edit Modal */}
       {modalType === "edit" && selectedBook && (
         <EditBookModal open={true} onClose={closeModal} book={selectedBook} />
       )}
 
-      {/* Borrow Book Modal */}
+      {/* Borrow Modal */}
       {modalType === "borrow" && selectedBook && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded shadow max-w-md w-full relative">
-            <button
-              onClick={closeModal}
-              className="absolute top-2 right-2 text-gray-500"
-            >
-              ✖
-            </button>
-            <h2 className="text-xl font-semibold mb-4">📦 Borrow Book</h2>
-            <form className="grid gap-3">
-              <label htmlFor="borrower">Your Name</label>
-              <input
-                type="text"
-                id="borrower"
-                className="border px-2 py-1 rounded"
-              />
-              <label htmlFor="date">Date</label>
-              <input
-                type="date"
-                id="date"
-                className="border px-2 py-1 rounded"
-              />
-              <div className="flex justify-end gap-2 mt-4">
-                <Button onClick={closeModal} variant="outline">
-                  Cancel
-                </Button>
-                <Button type="submit">Borrow</Button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <BorrowBookModal
+          open={true}
+          onClose={closeModal}
+          bookId={selectedBook.id}
+          bookTitle={selectedBook.title}
+        />
       )}
     </div>
   );
 };
 
-export default BooksPage;
+export default AllBooks;
