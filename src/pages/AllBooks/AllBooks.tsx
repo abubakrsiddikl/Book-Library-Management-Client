@@ -1,34 +1,21 @@
 import { BorrowBookModal } from "@/components/modal/BorrowBookModal";
 import { EditBookModal } from "@/components/modal/EditBookModal";
+import { useGetAllBooksQuery } from "@/redux/api/baseApi";
 
 import type { IBooks } from "@/types/types";
 import { useState } from "react";
 
-const dummyBooks: IBooks[] = [
-  {
-    id: "1",
-    title: "Clean Code",
-    author: "Robert C. Martin",
-    genre: "FICTION",
-    isbn: "9780132350884",
-    copies: 4,
-    available: true,
-  },
-  {
-    id: "2",
-    title: "1984",
-    author: "George Orwell",
-    genre: "FICTION",
-    isbn: "9780451524935",
-    copies: 0,
-    available: false,
-  },
-];
 
 const AllBooks = () => {
   const [selectedBook, setSelectedBook] = useState<IBooks | null>(null);
-  const [modalType, setModalType] = useState<"view" | "edit" | "borrow" | null>(null);
-
+  const [modalType, setModalType] = useState<"view" | "edit" | "borrow" | null>(
+    null
+  );
+  const { data, isLoading } = useGetAllBooksQuery(undefined);
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+  const books = data?.data ?? [];
   const openModal = (book: IBooks, type: "view" | "edit" | "borrow") => {
     setSelectedBook(book);
     setModalType(type);
@@ -57,8 +44,8 @@ const AllBooks = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {dummyBooks.map((book) => (
-              <tr key={book.id} className="hover:bg-gray-50 transition">
+            {!isLoading && books.map((book:IBooks) => (
+              <tr key={book._id} className="hover:bg-gray-50 transition">
                 <td className="px-4 py-2">{book.title}</td>
                 <td className="px-4 py-2">{book.author}</td>
                 <td className="px-4 py-2">{book.genre}</td>
@@ -148,7 +135,7 @@ const AllBooks = () => {
         <BorrowBookModal
           open={true}
           onClose={closeModal}
-          bookId={selectedBook.id}
+          bookId={selectedBook._id}
           bookTitle={selectedBook.title}
         />
       )}
