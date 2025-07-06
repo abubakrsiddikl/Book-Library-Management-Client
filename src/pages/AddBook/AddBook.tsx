@@ -20,6 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useCreateBookMutation } from "@/redux/api/baseApi";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 type BookFormData = {
   title: string;
@@ -47,10 +50,15 @@ const AddBook = () => {
       available: true,
     },
   });
+  const [createBook, { isLoading }] = useCreateBookMutation();
+  const navigate = useNavigate();
 
-  const onSubmit = (data: BookFormData) => {
-    console.log("✅ Book Submitted:", data);
-    // You can send this to backend via API
+  const onSubmit = async (payload: BookFormData) => {
+    const res = await createBook(payload);
+    if (res.data) {
+      toast.success("The new book added successfull");
+      navigate("/");
+    }
   };
 
   return (
@@ -172,8 +180,8 @@ const AddBook = () => {
           />
 
           {/* Submit */}
-          <Button type="submit" className="w-full">
-            Add Book
+          <Button type="submit" className="w-full cursor-pointer">
+            {isLoading ? "Add Book..." : "Add New Book"}
           </Button>
         </form>
       </Form>
