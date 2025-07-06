@@ -20,12 +20,32 @@ export const baseApi = createApi({
     }),
     // update book info
     updateBookInfo: build.mutation({
-      query: ( {id, updatedBookData} ) => ({
+      query: ({ id, updatedBookData }) => ({
         url: `/books/${id}`,
         method: "PUT",
         body: updatedBookData,
       }),
       invalidatesTags: ["book"],
+    }),
+    // delete a book
+    deleteBook: build.mutation({
+      query: (id: string) => ({
+        url: `/books/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["book"],
+    }),
+    // get borrow book summury
+    getBorrowSummury: build.query({
+      query: () => "/borrow",
+    }),
+    // crate borrow book
+    createBorrowBook: build.mutation({
+      query: (borrowedBook) => ({
+        url: "/borrow",
+        method: "POST",
+        body: borrowedBook,
+      }),
     }),
   }),
 });
@@ -34,4 +54,7 @@ export const {
   useGetAllBooksQuery,
   useCreateBookMutation,
   useUpdateBookInfoMutation,
+  useDeleteBookMutation,
+  useGetBorrowSummuryQuery,
+  useCreateBorrowBookMutation,
 } = baseApi;

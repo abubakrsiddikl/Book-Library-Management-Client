@@ -20,40 +20,47 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { DialogClose } from "@radix-ui/react-dialog";
+import { useCreateBorrowBookMutation } from "@/redux/api/baseApi";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 type BorrowFormValues = {
-  borrowerName: string;
-  borrowerEmail: string;
-  returnDate: string;
+  quantity: number;
+  dueDate: string;
 };
 
 type BorrowBookModalProps = {
   open: boolean;
   onClose: () => void;
-  bookId: string;
+  book: string;
   bookTitle: string;
 };
 
 export function BorrowBookModal({
   open,
   onClose,
-  bookId,
+  book,
   bookTitle,
 }: BorrowBookModalProps) {
   const form = useForm<BorrowFormValues>({
     defaultValues: {
-      borrowerName: "",
-      borrowerEmail: "",
-      returnDate: "",
+      quantity: 1,
+      dueDate: "",
     },
   });
+  const navigate = useNavigate();
+  const [createBorrowedBook] = useCreateBorrowBookMutation();
 
-  const onSubmit = (data: BorrowFormValues) => {
+  const onSubmit = async (data: BorrowFormValues) => {
     const payload = {
+      book,
       ...data,
-      bookId,
     };
-    console.log("📦 Borrow Data", payload);
+    const res = await createBorrowedBook(payload);
+    if (res.data) {
+      toast.success(`${bookTitle} This book has been borrowed . `);
+      navigate("/borrow-summary");
+    }
     onClose();
   };
 
@@ -63,8 +70,8 @@ export function BorrowBookModal({
         <DialogHeader>
           <DialogTitle>📦 Borrow Book</DialogTitle>
           <DialogDescription>
-            Fill in the information below to borrow <strong>{bookTitle}</strong>
-            .
+            Confirm how many copies you want to borrow of{" "}
+            <strong>{bookTitle}</strong>.
           </DialogDescription>
         </DialogHeader>
 
@@ -73,42 +80,28 @@ export function BorrowBookModal({
             onSubmit={form.handleSubmit(onSubmit)}
             className="grid gap-4 py-4"
           >
+            {/* Quantity */}
             <FormField
               control={form.control}
-              name="borrowerName"
+              name="quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Your Name</FormLabel>
+                  <FormLabel>Quantity</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your name" {...field} />
+                    <Input type="number" min={1} placeholder="1" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Due Date */}
             <FormField
               control={form.control}
-              name="borrowerEmail"
+              name="dueDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="you@example.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="returnDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Return Date</FormLabel>
+                  <FormLabel>Due Date</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
@@ -116,6 +109,7 @@ export function BorrowBookModal({
                 </FormItem>
               )}
             />
+
             <DialogFooter>
               <DialogClose asChild>
                 <Button type="button" variant="outline">

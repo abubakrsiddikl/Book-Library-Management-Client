@@ -68,7 +68,6 @@ export function EditBookModal({
   const onSubmit = async (data: FormValues) => {
     const { _id, ...payload } = data;
     const res = await updateBookInfo({ id: _id, updatedBookData: payload });
-    console.log(res);
     if (res.data) {
       toast.success("This Book Information Update Successfull");
     }

@@ -10,30 +10,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { useGetBorrowSummuryQuery } from "@/redux/api/baseApi";
 
-type BorrowEntry = {
-  id: string;
-  bookTitle: string;
-  borrower: string;
+type Book = {
+  title: string;
   date: string;
 };
-
-const dummyBorrowedData: BorrowEntry[] = [
-  {
-    id: "1",
-    bookTitle: "Clean Code",
-    borrower: "Rakib Hasan",
-    date: "2025-07-01",
-  },
-  {
-    id: "2",
-    bookTitle: "1984",
-    borrower: "Amina Sultana",
-    date: "2025-07-02",
-  },
-];
+interface BorrowEntry {
+  id: string;
+  book: Book;
+}
 
 export default function BorrowSummary() {
+  const { data, isLoading } = useGetBorrowSummuryQuery(undefined);
+  if (isLoading) {
+    return <p>Loading ...</p>;
+  }
+  const books = data?.data ?? [];
+
   return (
     <div className="p-4 md:p-8">
       <h1 className="text-2xl font-bold mb-6">📈 Borrow Summary</h1>
@@ -45,31 +39,30 @@ export default function BorrowSummary() {
             <CardTitle>Total Borrowed</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-semibold">{dummyBorrowedData.length}</p>
+            <p className="text-3xl font-semibold">{books.length}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Borrow Table */}
-      {dummyBorrowedData.length > 0 ? (
+      {books.length > 0 ? (
         <div className="overflow-x-auto bg-white rounded shadow">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>#</TableHead>
                 <TableHead>Book Title</TableHead>
-                <TableHead>Borrower</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {dummyBorrowedData.map((entry, index) => (
-                <TableRow key={entry.id}>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>{entry.bookTitle}</TableCell>
-                  <TableCell>{entry.borrower}</TableCell>
-                  <TableCell>{entry.date}</TableCell>
+              {books.map((entry: BorrowEntry, idx: number) => (
+                <TableRow key={idx}>
+                  <TableCell>{idx + 1}</TableCell>
+                  <TableCell>{entry.book.title}</TableCell>
+
+                  <TableCell>{entry.book.date || "no date avilable"}</TableCell>
                   <TableCell>
                     <Badge variant="outline">Borrowed</Badge>
                   </TableCell>

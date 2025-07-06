@@ -1,17 +1,23 @@
 import { BorrowBookModal } from "@/components/modal/BorrowBookModal";
 import { EditBookModal } from "@/components/modal/EditBookModal";
-import { useGetAllBooksQuery } from "@/redux/api/baseApi";
+import Swal from "sweetalert2";
+import {
+  useDeleteBookMutation,
+  useGetAllBooksQuery,
+} from "@/redux/api/baseApi";
 
 import type { IBooks } from "@/types/types";
 import { useState } from "react";
-
 
 const AllBooks = () => {
   const [selectedBook, setSelectedBook] = useState<IBooks | null>(null);
   const [modalType, setModalType] = useState<"view" | "edit" | "borrow" | null>(
     null
   );
+  // !  fetch all book
   const { data, isLoading } = useGetAllBooksQuery(undefined);
+  // !  delete a book
+  const [deleteBook] = useDeleteBookMutation();
   if (isLoading) {
     return <p>Loading...</p>;
   }
@@ -24,6 +30,30 @@ const AllBooks = () => {
   const closeModal = () => {
     setSelectedBook(null);
     setModalType(null);
+  };
+
+  //   delete a book
+  const handleDelete = async (id: string) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be sure delet this book!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const res = await deleteBook(id);
+        if (res.data) {
+          Swal.fire({
+            title: "Deleted!",
+            text: "Book has been deleted.",
+            icon: "success",
+          });
+        }
+      }
+    });
   };
 
   return (
@@ -44,54 +74,53 @@ const AllBooks = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {!isLoading && books.map((book:IBooks) => (
-              <tr key={book._id} className="hover:bg-gray-50 transition">
-                <td className="px-4 py-2">{book.title}</td>
-                <td className="px-4 py-2">{book.author}</td>
-                <td className="px-4 py-2">{book.genre}</td>
-                <td className="px-4 py-2">{book.isbn}</td>
-                <td className="px-4 py-2 text-center">{book.copies}</td>
-                <td className="px-4 py-2 text-center">
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-semibold ${
-                      book.available
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-600"
-                    }`}
-                  >
-                    {book.available ? "Available" : "Unavailable"}
-                  </span>
-                </td>
-                <td className="px-4 py-2 text-center space-x-2">
-                  <button
-                    onClick={() => openModal(book, "view")}
-                    className="text-blue-600 hover:underline text-xs"
-                  >
-                    View
-                  </button>
-                  <button
-                    onClick={() => openModal(book, "edit")}
-                    className="text-green-600 hover:underline text-xs"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => openModal(book, "borrow")}
-                    className="text-yellow-600 hover:underline text-xs"
-                  >
-                    Borrow
-                  </button>
-                  <button
-                    onClick={() =>
-                      window.confirm("Are you sure to delete this book?")
-                    }
-                    className="text-red-600 hover:underline text-xs"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {!isLoading &&
+              books.map((book: IBooks) => (
+                <tr key={book._id} className="hover:bg-gray-50 transition">
+                  <td className="px-4 py-2">{book.title}</td>
+                  <td className="px-4 py-2">{book.author}</td>
+                  <td className="px-4 py-2">{book.genre}</td>
+                  <td className="px-4 py-2">{book.isbn}</td>
+                  <td className="px-4 py-2 text-center">{book.copies}</td>
+                  <td className="px-4 py-2 text-center">
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-semibold ${
+                        book.available
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-600"
+                      }`}
+                    >
+                      {book.available ? "Available" : "Unavailable"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 text-center space-x-2">
+                    <button
+                      onClick={() => openModal(book, "view")}
+                      className="text-blue-600 hover:underline text-xs"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => openModal(book, "edit")}
+                      className="text-green-600 hover:underline text-xs"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => openModal(book, "borrow")}
+                      className="text-yellow-600 hover:underline text-xs"
+                    >
+                      Borrow
+                    </button>
+                    <button
+                      onClick={() => handleDelete(book._id)}
+                      className="text-red-600 hover:underline text-xs"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
@@ -135,7 +164,7 @@ const AllBooks = () => {
         <BorrowBookModal
           open={true}
           onClose={closeModal}
-          bookId={selectedBook._id}
+          book={selectedBook._id}
           bookTitle={selectedBook.title}
         />
       )}
