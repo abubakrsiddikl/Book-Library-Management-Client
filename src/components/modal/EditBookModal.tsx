@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Dialog,
@@ -7,13 +7,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
-import { Button } from "../ui/button"
-import { DialogClose } from "@radix-ui/react-dialog"
-import { type IBooks } from "@/types/types"
-import { useForm } from "react-hook-form"
+import { Button } from "../ui/button";
+import { DialogClose } from "@radix-ui/react-dialog";
+import { type IBooks } from "@/types/types";
+import { useForm } from "react-hook-form";
 import {
   Form,
   FormField,
@@ -21,30 +21,40 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from "@/components/ui/form"
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useUpdateBookInfoMutation } from "@/redux/api/baseApi";
+import toast from "react-hot-toast";
 
 type FormValues = {
-  title: string
-  author: string
-  genre: IBooks["genre"]
-  isbn: string
-  copies: number
-  available: boolean
-}
+  _id: string;
+  title: string;
+  author: string;
+  genre: IBooks["genre"];
+  isbn: string;
+  copies: number;
+  available: boolean;
+};
 
 export function EditBookModal({
   open,
   onClose,
   book,
 }: {
-  open: boolean
-  onClose: () => void
-  book: IBooks
+  open: boolean;
+  onClose: () => void;
+  book: IBooks;
 }) {
   const form = useForm<FormValues>({
     defaultValues: {
+      _id: book._id,
       title: book.title,
       author: book.author,
       genre: book.genre,
@@ -52,12 +62,18 @@ export function EditBookModal({
       copies: book.copies,
       available: book.available,
     },
-  })
+  });
 
-  const onSubmit = (data: FormValues) => {
-    console.log("Updated Book Data:", data)
-    onClose()
-  }
+  const [updateBookInfo, { isLoading }] = useUpdateBookInfoMutation();
+  const onSubmit = async (data: FormValues) => {
+    const { _id, ...payload } = data;
+    const res = await updateBookInfo({ id: _id, updatedBookData: payload });
+    console.log(res);
+    if (res.data) {
+      toast.success("This Book Information Update Successfull");
+    }
+    onClose();
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -187,11 +203,13 @@ export function EditBookModal({
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type="submit">Save changes</Button>
+              <Button type="submit" className="cursor-pointer">
+                {isLoading ? "Updating..." : "Save changes"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
