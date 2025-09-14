@@ -24,7 +24,7 @@ import { useNavigate } from "react-router";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// ✅ Zod Schema
+// Zod Schema
 const borrowBookSchema = z.object({
   quantity: z
     .number({ invalid_type_error: "Quantity must be a number" })
