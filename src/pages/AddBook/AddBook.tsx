@@ -1,6 +1,8 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import {
   Form,
   FormField,
@@ -24,23 +26,41 @@ import { useCreateBookMutation } from "@/redux/api/baseApi";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
-type BookFormData = {
-  title: string;
-  author: string;
-  genre:
-    | "FICTION"
-    | "NON_FICTION"
-    | "SCIENCE"
-    | "HISTORY"
-    | "BIOGRAPHY"
-    | "FANTASY";
-  isbn: string;
-  copies: number;
-  available: boolean;
-};
+import { z } from "zod";
+
+// Zod Schema
+const bookFormSchema = z.object({
+  title: z
+    .string()
+    .min(1, { message: "Title is required" })
+    .max(100, { message: "Title must be at most 100 characters" }),
+  author: z
+    .string()
+    .min(1, { message: "Author name is required" })
+    .max(50, { message: "Author must be at most 50 characters" }),
+  genre: z.enum(
+    ["FICTION", "NON_FICTION", "SCIENCE", "HISTORY", "BIOGRAPHY", "FANTASY"],
+    {
+      errorMap: () => ({ message: "Please select a valid genre" }),
+    }
+  ),
+  isbn: z
+    .string()
+    .min(10, { message: "ISBN must be at least 10 characters" })
+    .max(20, { message: "ISBN must be at most 20 characters" }),
+  copies: z
+    .number({ invalid_type_error: "Copies must be a number" })
+    .min(1, { message: "At least 1 copy is required" }),
+  available: z.boolean({
+    invalid_type_error: "Available must be true or false",
+  }),
+});
+
+export type BookFormSchema = z.infer<typeof bookFormSchema>;
 
 const AddBook = () => {
-  const form = useForm<BookFormData>({
+  const form = useForm<BookFormSchema>({
+    resolver: zodResolver(bookFormSchema),
     defaultValues: {
       title: "",
       author: "",
@@ -50,13 +70,14 @@ const AddBook = () => {
       available: true,
     },
   });
+
   const [createBook, { isLoading }] = useCreateBookMutation();
   const navigate = useNavigate();
 
-  const onSubmit = async (payload: BookFormData) => {
+  const onSubmit = async (payload: BookFormSchema) => {
     const res = await createBook(payload);
-    if (res.data) {
-      toast.success("The new book added successfull");
+    if ("data" in res && res.data) {
+      toast.success("The new book added successfully");
       navigate("/");
     }
   };
@@ -150,7 +171,14 @@ const AddBook = () => {
               <FormItem>
                 <FormLabel>Copies</FormLabel>
                 <FormControl>
-                  <Input type="number" min={0} {...field} />
+                  <Input
+                    type="number"
+                    min={1}
+                    value={field.value}
+                    onChange={(e) =>
+                      field.onChange(e.target.valueAsNumber || 0)
+                    }
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -181,7 +209,7 @@ const AddBook = () => {
 
           {/* Submit */}
           <Button type="submit" className="w-full cursor-pointer">
-            {isLoading ? "Add Book..." : "Add New Book"}
+            {isLoading ? "Adding Book..." : "Add New Book"}
           </Button>
         </form>
       </Form>

@@ -1,6 +1,7 @@
-"use client";
+
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -14,10 +15,12 @@ import { useGetBorrowSummuryQuery } from "@/redux/api/baseApi";
 
 type Book = {
   title: string;
-  date: string;
+  dueDate: string;
 };
 interface BorrowEntry {
   id: string;
+  totalQuantity: number;
+  lastDueDate: string;
   book: Book;
 }
 
@@ -52,7 +55,8 @@ export default function BorrowSummary() {
               <TableRow>
                 <TableHead>#</TableHead>
                 <TableHead>Book Title</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Last Due Date</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -61,8 +65,11 @@ export default function BorrowSummary() {
                 <TableRow key={idx}>
                   <TableCell>{idx + 1}</TableCell>
                   <TableCell>{entry.book.title}</TableCell>
+                  <TableCell>{entry.totalQuantity}</TableCell>
 
-                  <TableCell>{entry.book.date || "no date avilable"}</TableCell>
+                  <TableCell>
+                    {format(new Date(entry.lastDueDate),"dd-MM-yyyy") || "no date avilable"}
+                  </TableCell>
                   <TableCell>
                     <Badge variant="outline">Borrowed</Badge>
                   </TableCell>

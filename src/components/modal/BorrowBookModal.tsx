@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Dialog,
   DialogContent,
@@ -23,11 +21,18 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { useCreateBorrowBookMutation } from "@/redux/api/baseApi";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-type BorrowFormValues = {
-  quantity: number;
-  dueDate: string;
-};
+// ✅ Zod Schema
+const borrowBookSchema = z.object({
+  quantity: z
+    .number({ invalid_type_error: "Quantity must be a number" })
+    .min(1, "You must borrow at least 1 copy"),
+  dueDate: z.string().min(1, "Due date is required"),
+});
+
+type BorrowFormValues = z.infer<typeof borrowBookSchema>;
 
 type BorrowBookModalProps = {
   open: boolean;
@@ -43,11 +48,13 @@ export function BorrowBookModal({
   bookTitle,
 }: BorrowBookModalProps) {
   const form = useForm<BorrowFormValues>({
+    resolver: zodResolver(borrowBookSchema),
     defaultValues: {
       quantity: 1,
       dueDate: "",
     },
   });
+
   const navigate = useNavigate();
   const [createBorrowedBook] = useCreateBorrowBookMutation();
 
@@ -88,7 +95,14 @@ export function BorrowBookModal({
                 <FormItem>
                   <FormLabel>Quantity</FormLabel>
                   <FormControl>
-                    <Input type="number" min={1} placeholder="1" {...field} />
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="1"
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -46,6 +46,7 @@ export const baseApi = createApi({
         method: "POST",
         body: borrowedBook,
       }),
+      invalidatesTags: ["book"],
     }),
   }),
 });
