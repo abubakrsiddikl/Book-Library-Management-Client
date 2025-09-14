@@ -8,6 +8,7 @@ import {
 
 import type { IBooks } from "@/types/types";
 import { useState } from "react";
+import LoadingSpinner from "@/components/LoadingSppinner";
 
 const AllBooks = () => {
   const [selectedBook, setSelectedBook] = useState<IBooks | null>(null);
@@ -19,7 +20,7 @@ const AllBooks = () => {
   // !  delete a book
   const [deleteBook] = useDeleteBookMutation();
   if (isLoading) {
-    return <p>Loading...</p>;
+    return <LoadingSpinner></LoadingSpinner>;
   }
   const books = data?.data ?? [];
   const openModal = (book: IBooks, type: "view" | "edit" | "borrow") => {

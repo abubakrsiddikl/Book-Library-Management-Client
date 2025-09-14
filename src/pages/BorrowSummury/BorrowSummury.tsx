@@ -1,5 +1,3 @@
-
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import {
@@ -12,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useGetBorrowSummuryQuery } from "@/redux/api/baseApi";
+import LoadingSpinner from "@/components/LoadingSppinner";
 
 type Book = {
   title: string;
@@ -27,7 +26,7 @@ interface BorrowEntry {
 export default function BorrowSummary() {
   const { data, isLoading } = useGetBorrowSummuryQuery(undefined);
   if (isLoading) {
-    return <p>Loading ...</p>;
+    return <LoadingSpinner></LoadingSpinner>;
   }
   const books = data?.data ?? [];
 
@@ -68,7 +67,8 @@ export default function BorrowSummary() {
                   <TableCell>{entry.totalQuantity}</TableCell>
 
                   <TableCell>
-                    {format(new Date(entry.lastDueDate),"dd-MM-yyyy") || "no date avilable"}
+                    {format(new Date(entry.lastDueDate), "dd-MM-yyyy") ||
+                      "no date avilable"}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">Borrowed</Badge>
